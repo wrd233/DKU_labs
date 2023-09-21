@@ -85,7 +85,7 @@ int getDoubleInput(double* number){
         //transform number to the user double
         transform(number, userDouble);
         return 1;
-        }
+    }
 
 }
 
