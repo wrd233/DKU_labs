@@ -5,13 +5,14 @@
 #define FAMILYNUM 100
 #define FAMILYMEMMAX 10 // There are up to FAMILYMEMMAX people in a family
 #define ALLOC 200
-
+#define DELIM ", "
 
 typedef struct family_t{
     char * surname;
     size_t size;
     char ** names;
 } family;
+
 typedef struct registry_t{
     family * myData;
     size_t nrecs;
@@ -32,25 +33,40 @@ void addFamily(registry* myRecs, char* surname, char* sizeStr, char** names){
 
     int size=0;
     size = atoi(sizeStr);
-    printf("size=%d\n", size);
+    // printf("size=%d\n", size);
 
-    // 检查:size是否有错
+    // Check: size for errors
     if(size<=0){return;}
 
-    // 检查:人数是否有错
+    // Check: The declared and actual numbers do not match
     if(size != getNameNum(names)){return;}
-    // printf("当前家庭的人数为:%d\n",getNameNum(names));
+    // printf("The current family size is:%d\n",getNameNum(names));
 
-    int pos = myRecs->nrecs++;
-
-    printf("add family %s\n",surname);
-    myRecs->myData[pos].surname = surname;
-    myRecs->myData[pos].size = size;
-    myRecs->myData[pos].names = (char**)malloc(FAMILYMEMMAX*sizeof(char*));
-    for(int i=0;i<size;i++){
-        myRecs->myData[pos].names[i] = names[i];
+    int pos = -1;
+    for(int i=0;i<myRecs->nrecs;i++){
+        if(strcmp(surname,myRecs->myData[i].surname)==0){
+            pos = i;
+        }
     }
-    printf("-----------\n");
+    if(pos!=-1){
+        int sizePre = myRecs->myData[pos].size;
+        myRecs->myData[pos].size += size;
+        for(int i=0; i<size; i++){
+            myRecs->myData[pos].names[sizePre + i] = names[i];
+        }
+    }else{
+        int pos = myRecs->nrecs++;
+
+        // printf("add family %s\n",surname);
+        myRecs->myData[pos].surname = surname;
+        myRecs->myData[pos].size = size;
+        // TODO: is it enough? or should be dynamic?
+        myRecs->myData[pos].names = (char**)malloc(FAMILYMEMMAX*sizeof(char*));
+        for(int i=0;i<size;i++){
+            myRecs->myData[pos].names[i] = names[i];
+        }
+    }
+    // printf("-----------\n");
 }
 
 void swap(family *x, family *y) {
@@ -72,7 +88,7 @@ void deleteFamily(registry* myRecs, char* surname){
     }
     if(deletePos == -1){return;}
 
-    printf("delete family %s\n",surname);
+    // printf("delete family %s\n",surname);
     free(myRecs->myData[deletePos].names);
     swap(&myRecs->myData[deletePos], &myRecs->myData[myRecs->nrecs-1]);
     myRecs->nrecs--;
@@ -81,14 +97,13 @@ void deleteFamily(registry* myRecs, char* surname){
         free(myRecs->myData);
         free(myRecs);
     }
-    printf("-----------\n");
+    // printf("-----------\n");
 }
 
 int cmpfunc (const void * a, const void * b){
     return ( ((family*)a)->size - ((family*)b)->size );
 }
 
-// TODO: 使用性能更加良好的sort
 void sortFamily(registry* myRecs){
     qsort(myRecs->myData, myRecs->nrecs, sizeof(family), cmpfunc);
 }
@@ -98,15 +113,18 @@ void printFamily(registry* myRecs){
         printf("No family!\n");
         return ;
     }
-    printf("print family: \n\n");
+    int familyNum=0;
+    int memberNum=1;
+    // printf("print family: \n\n");
     for(int i=0;i<myRecs->nrecs;i++){
-        printf("The %s family:\n",myRecs->myData[i].surname);
+        memberNum = 1;
+        printf("[%c] The %s family:\n",'A'+familyNum++,myRecs->myData[i].surname);
         for(int j=0;j<myRecs->myData[i].size;j++){
-            printf("  %s %s\n",myRecs->myData[i].names[j], myRecs->myData[i].surname);
+            printf("    %d: %s %s\n",memberNum++,myRecs->myData[i].names[j], myRecs->myData[i].surname);
         }
         printf("\n");
     }
-    printf("-----------\n");
+    // printf("-----------\n");
 }
 
 ssize_t newgetline(char **line, size_t *n, FILE *fp) {
@@ -134,8 +152,7 @@ ssize_t newgetline(char **line, size_t *n, FILE *fp) {
     return i;
 }
 
-
-int main(int argc,char **argv){
+registry* initReg(){
     registry * myRecs;
     // write the code to initialize myRecs so that it holds in the heap the following families
     myRecs = (registry*)malloc(sizeof(struct registry_t));
@@ -143,60 +160,91 @@ int main(int argc,char **argv){
     // TODO: Now the initialized data size is fixed, and it is recommended to change it to one that can be expanded by itself
     myRecs->myData = malloc(FAMILYNUM * sizeof(struct family_t));
     myRecs->nrecs = 0;
+    return myRecs;
+}
 
+// TODO: Is this parameter reasonable?
+int getFamilyFromFile(char*** output, const char* fileName){
     char **lines = NULL;
     char *curr = NULL;
     size_t sz;
     size_t lineNum = 0;
 
     // get input
-    for(int j=1;j<argc;j++){
-        FILE* fp = fopen(argv[j],"r");  // TODO:检查一下文件是否打开
-        while (newgetline(&curr, &sz, fp) >= 0){
-            lines = realloc(lines, (lineNum + 1) * sizeof(*lines));
-            lines[lineNum] = curr;
-            curr = NULL;
-            lineNum++;
-        }
-        fclose(fp);
+    FILE* fp = fopen(fileName,"r");  // TODO:检查一下文件是否打开
+    while (newgetline(&curr, &sz, fp) >= 0){
+        lines = realloc(lines, (lineNum + 1) * sizeof(*lines));
+        lines[lineNum] = curr;
+        curr = NULL;
+        lineNum++;
     }
+    fclose(fp);
+    *output = lines;
 
+    return lineNum;
+}
 
-    // 分割
-    const char delim[3] = ", ";
+void addFamilyFromLine(registry* myRecs, char* line){
+    const char delim[10] = DELIM;
     char *token;
     char** temp;
 
+    // TODO: Modified to dynamically expand, not hardcoded
     temp = malloc(FAMILYMEMMAX*sizeof(char**));
+    int p=0;
 
-    for(int j=1; j<lineNum; j++){
-        int p=0;
-        token = strtok(lines[j], delim);
-        while(token != NULL){
-            // printf("%s\n", token);
-            temp[p++] = token;
-            token = strtok(NULL, delim);
-        }
-        temp[p] = NULL;
-        addFamily(myRecs, temp[0], temp[1], &temp[2]);
+    // Split strings
+    token = strtok(line, delim);
+    while(token != NULL){
+        // printf("%s\n", token);
+        temp[p++] = token;
+        token = strtok(NULL, delim);
+    }
+    temp[p] = NULL;
+    addFamily(myRecs, temp[0], temp[1], &temp[2]);
+
+}
+
+void freeRegistry(registry* reg){
+    for(int i=0; i<reg->nrecs; i++){
+        free(reg->myData[i].names);
+    }
+    free(reg->myData);
+    free(reg);
+}
+
+int main(int argc,char **argv){
+    registry* myRecs = initReg();
+
+    char** familyLines=NULL;
+    int familyNum=0;
+    for(int i=1; i<argc; i++){
+        familyNum = getFamilyFromFile(&familyLines, argv[i]);
     }
 
-    int sum=0;
+    for(int i=1; i<familyNum; i++){
+        addFamilyFromLine(myRecs, familyLines[i]);
+    }
 
+    // Count the total number of family number
+    int sum=0;
     for(int i=0; i<myRecs->nrecs; i++){
         sum += myRecs->myData[i].size;
-        // printf("%s家有%ld个人\n",myRecs->myData[i].surname, myRecs->myData[i].size);    
     }
 
-    printf("一共有%d的人\n", sum);
+    printf("\nThere were %d people in total\n\n", sum);
+
+    printf("===========before sort===========\n");
 
     printFamily(myRecs);
 
     sortFamily(myRecs);
 
-    printf("%ld\n",myRecs->nrecs);
+    printf("===========after sort===========\n");
 
     printFamily(myRecs);
+
+    freeRegistry(myRecs);
 
     return EXIT_SUCCESS;
 } 
