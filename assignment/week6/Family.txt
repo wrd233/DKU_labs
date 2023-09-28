@@ -1,0 +1,12 @@
+FamilyName, NumPeople, Names
+Mura, 3, Ivan, Elvira, Francesca
+Zhang, 2, Ming, Susie
+Miller, -1, Ross, Hannah
+Hilton, 4, Drew, Stacey, Philip, Annie
+Wang, 3, Xin, Shuyi
+Moore, 3, George, Elisabeth, William
+Mura, 2, Giovanni, Elisabetta
+Wang, 2, Alex, Mingming
+Moore, 2, John, Lisa
+Mura, 3, Marcello, Valentina, Luigi
+Zhang, 3, Yilin, Siyue, Brandon
