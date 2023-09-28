@@ -17,14 +17,14 @@ typedef struct registry_t{
     size_t nrecs;
 } registry;
 
-// int getNameNum(char** names){
-    // int res = 0;
-    // if(names == NULL){return res;}
-    // for(int i=0; names[i]!=NULL && names[i][0] != '\0';i++){
-    //     res ++;
-    // }
-    // return res;
-// }
+int getNameNum(char** names){
+    int res = 0;
+    if(names == NULL){return res;}
+    for(int i=0; names[i]!=NULL;i++){
+        res ++;
+    }
+    return res;
+}
 
 // TODO: 检查一下人口是否对得上
 void addFamily(registry* myRecs, char* surname, char* sizeStr, char** names){
@@ -38,7 +38,8 @@ void addFamily(registry* myRecs, char* surname, char* sizeStr, char** names){
     if(size<=0){return;}
 
     // 检查:人数是否有错
-    // if(size != getNameNum(names)){return;}
+    if(size != getNameNum(names)){return;}
+    // printf("当前家庭的人数为:%d\n",getNameNum(names));
 
     int pos = myRecs->nrecs++;
 
@@ -167,6 +168,7 @@ int main(int argc,char **argv){
             temp[p++] = token;
             token = strtok(NULL, delim);
         }
+        temp[p] = NULL;
         addFamily(myRecs, temp[0], temp[1], &temp[2]);
     }
 
