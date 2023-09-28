@@ -18,6 +18,7 @@ typedef struct registry_t{
     size_t nrecs;
 } registry;
 
+// Get the number of names in the Family
 int getNameNum(char** names){
     int res = 0;
     if(names == NULL){return res;}
@@ -28,6 +29,7 @@ int getNameNum(char** names){
     return res;
 }
 
+// Insert a Family(parsed by a line of formatted string) into a registry
 void addFamily(registry* myRecs, char* surname, char* sizeStr, char** names){
     if(myRecs == NULL){return;}
 
@@ -69,12 +71,14 @@ void addFamily(registry* myRecs, char* surname, char* sizeStr, char** names){
     // printf("-----------\n");
 }
 
+// Swap the positions of the two Family pointers
 void swap(family *x, family *y) {
     family temp = *x;
     *x = *y;
     *y = temp;
 }
 
+// Remove a Family from the Registry (and free memory)
 void deleteFamily(registry* myRecs, char* surname){
     if(myRecs==NULL || myRecs->nrecs==0){return;}
 
@@ -100,12 +104,13 @@ void deleteFamily(registry* myRecs, char* surname){
     // printf("-----------\n");
 }
 
-int cmpfunc (const void * a, const void * b){
+// Compare two Families
+int cmpFamily (const void * a, const void * b){
     return ( ((family*)a)->size - ((family*)b)->size );
 }
 
 void sortFamily(registry* myRecs){
-    qsort(myRecs->myData, myRecs->nrecs, sizeof(family), cmpfunc);
+    qsort(myRecs->myData, myRecs->nrecs, sizeof(family), cmpFamily);
 }
 
 void printFamily(registry* myRecs){
@@ -164,6 +169,7 @@ registry* initReg(){
 }
 
 // TODO: Is this parameter reasonable?
+// Read about Family from a file
 int getFamilyFromFile(char*** output, const char* fileName){
     char **lines = NULL;
     char *curr = NULL;
@@ -172,6 +178,10 @@ int getFamilyFromFile(char*** output, const char* fileName){
 
     // get input
     FILE* fp = fopen(fileName,"r");  // TODO:检查一下文件是否打开
+    if(fp == NULL){
+        printf("Opening file %s failed\n", fileName);
+        return -1;
+    }
     while (newgetline(&curr, &sz, fp) >= 0){
         lines = realloc(lines, (lineNum + 1) * sizeof(*lines));
         lines[lineNum] = curr;
@@ -184,6 +194,7 @@ int getFamilyFromFile(char*** output, const char* fileName){
     return lineNum;
 }
 
+// Parse the Family information from a formatted string and add it to the Registry
 void addFamilyFromLine(registry* myRecs, char* line){
     const char delim[10] = DELIM;
     char *token;
@@ -205,6 +216,7 @@ void addFamilyFromLine(registry* myRecs, char* line){
 
 }
 
+// free the registry along with those families stored in it
 void freeRegistry(registry* reg){
     for(int i=0; i<reg->nrecs; i++){
         free(reg->myData[i].names);
@@ -218,12 +230,21 @@ int main(int argc,char **argv){
 
     char** familyLines=NULL;
     int familyNum=0;
-    for(int i=1; i<argc; i++){
-        familyNum = getFamilyFromFile(&familyLines, argv[i]);
-    }
 
-    for(int i=1; i<familyNum; i++){
-        addFamilyFromLine(myRecs, familyLines[i]);
+    if(argc == 1){
+        // If no file name is specified, it is read from "Family.txt" by default
+        familyNum = getFamilyFromFile(&familyLines, "Family.txt");
+        for(int i=1; i<familyNum; i++){
+            addFamilyFromLine(myRecs, familyLines[i]);
+        }
+    }else{
+        // read from multiple files
+        for(int i=1; i<argc; i++){
+            familyNum = getFamilyFromFile(&familyLines, argv[i]);
+            for(int i=1; i<familyNum; i++){
+                addFamilyFromLine(myRecs, familyLines[i]);
+            }
+        }
     }
 
     // Count the total number of family number
@@ -245,6 +266,12 @@ int main(int argc,char **argv){
     printFamily(myRecs);
 
     freeRegistry(myRecs);
+
+    printf("===========result===========\n");
+
+    for(int i=0;i<myRecs->nrecs;i++){
+        printf("Family %s: %ld members\n",myRecs->myData[i].surname, myRecs->myData[i].size);
+    }
 
     return EXIT_SUCCESS;
 } 
