@@ -20,13 +20,13 @@ typedef struct registry_t{
 int getNameNum(char** names){
     int res = 0;
     if(names == NULL){return res;}
+    // magic: suppose the end of names is NULL
     for(int i=0; names[i]!=NULL;i++){
         res ++;
     }
     return res;
 }
 
-// TODO: 检查一下人口是否对得上
 void addFamily(registry* myRecs, char* surname, char* sizeStr, char** names){
     if(myRecs == NULL){return;}
 
@@ -82,6 +82,15 @@ void deleteFamily(registry* myRecs, char* surname){
         free(myRecs);
     }
     printf("-----------\n");
+}
+
+int cmpfunc (const void * a, const void * b){
+    return ( ((family*)a)->size - ((family*)b)->size );
+}
+
+// TODO: 使用性能更加良好的sort
+void sortFamily(registry* myRecs){
+    qsort(myRecs->myData, myRecs->nrecs, sizeof(family), cmpfunc);
 }
 
 void printFamily(registry* myRecs){
@@ -180,6 +189,12 @@ int main(int argc,char **argv){
     }
 
     printf("一共有%d的人\n", sum);
+
+    printFamily(myRecs);
+
+    sortFamily(myRecs);
+
+    printf("%ld\n",myRecs->nrecs);
 
     printFamily(myRecs);
 
