@@ -25,7 +25,14 @@ int main(){
         printf("第%lu位上是%s\n", temp->sourcePos, temp->name);
     }
 
+    for(size_t i=0; i<blankArray->num; i++){
+        blankReplace(tokenArray, blankArray->blanks[i], "cat");
+    }
 
+    printf("\n=========打印tokens:=========\n");
+    for(size_t i=0; i<tokenArray->num; i++){
+        printf("%s ", tokenArray->tokens[i]);
+    }
 
     return EXIT_SUCCESS;
 }

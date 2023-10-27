@@ -41,6 +41,6 @@ char** getlinesFromFile(const char* fileName, size_t *lineNum);
 BlankArray* buildBlankArr(TokenArray* tokenArray);
 
 // 将blank位置的内容进行替换
-void blankReplace(TokenArray* tokenArray, const Blank* blank, const char* word);
+void blankReplace(TokenArray* tokenArray, const Blank* blank, const char* replacement);
 
 #endif

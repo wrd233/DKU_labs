@@ -113,6 +113,30 @@ BlankArray* buildBlankArr(TokenArray* tokenArray){
     return blankArray;
 }
 
-void blankReplace(TokenArray* tokenArray, const Blank* blank, const char* word){
+void blankReplace(TokenArray* tokenArray, const Blank* blank, const char* replacement){
+    size_t pos = blank->sourcePos;
+    char *wordPtr = tokenArray->tokens[pos];
 
+    printf("需要修改的内容为%s\n",wordPtr);
+
+
+    char* start = strchr(wordPtr, '_');
+    char* end = strrchr(wordPtr, '_');
+
+    if (start != NULL && end != NULL && end > start) {
+        size_t prefixLength = start - wordPtr;
+        size_t suffixLength = strlen(end + 1);
+        size_t replacementLength = strlen(replacement);
+
+        char* result = (char*)malloc(prefixLength + replacementLength + suffixLength + 1);
+        strncpy(result, wordPtr, prefixLength);
+        strncpy(result + prefixLength, replacement, replacementLength);
+        strncpy(result + prefixLength + replacementLength, end + 1, suffixLength);
+        result[prefixLength + replacementLength + suffixLength] = '\0';
+
+        free(wordPtr);
+        tokenArray->tokens[pos] = result;
+    }
 }
+
+// 我希望编写一个C函数，用于将字符串中用'_'包裹的部分替换成特定字符串，例如给定"asdf_123_asd"和替换的字符串"cat"，运行之后的结果应该是"asdfcatasd"
