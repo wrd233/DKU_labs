@@ -1,0 +1,8 @@
+Name: Rundong Wang
+ID: rw310
+
+Note that this program can read multiple files as input. The specific format is: 
+    <program name> <file1> <file2>.
+
+For example, assuming the program name is a.out, the specific input would be: 
+    a.out Family.txt Family2.txt.
