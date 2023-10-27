@@ -4,6 +4,21 @@
 #include "provided.h"
 
 //any functions you want your main to use
+typedef struct{
+    size_t sourcePos;
+    char *name;
+} Blank;
+
+typedef struct{
+    Blank **blanks;
+    size_t num;
+} BlankArray;
+
+typedef struct {
+    char** tokens;
+    size_t num;
+} TokenArray;
+
 
 /**
  * @param str input string
@@ -11,24 +26,21 @@
  * @param num the number of current tokens 
  * @brief Parse tokens separated by spaces in str and add them to tokens
 */
-void appendTokensFromStr(const char* str, char ***tokens, size_t *num);
 
-void appendTokensWithNewline(char ***tokens, size_t *num);
+TokenArray* createTokenArray();
+
+BlankArray* createBlankArray();
+
+void appendTokensFromStr(const char* str, TokenArray* tokenArray);
+
+void appendTokensWithNewline(TokenArray* tokenArray);
 
 char** getlinesFromFile(const char* fileName, size_t *lineNum);
 
-
-struct blank{
-    size_t sourcePos;
-    char *name;
-};
-
-typedef struct blank Blank;
-
 // 从tokens建立blank数组
-Blank** createBlankArr(char **tokens, size_t tokenNum, size_t* blankNum);
+BlankArray* buildBlankArr(TokenArray* tokenArray);
 
 // 将blank位置的内容进行替换
-void blankReplace(char **tokens, const Blank* blank, const char* word);
+void blankReplace(TokenArray* tokenArray, const Blank* blank, const char* word);
 
 #endif

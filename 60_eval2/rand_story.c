@@ -33,49 +33,60 @@ char** getlinesFromFile(const char* fileName, size_t *lineNum){
     return lines;
 }
 
-void appendTokensWithNewline(char ***tokens, size_t *num){
-    if(tokens == NULL){
-        *tokens = malloc(sizeof(char*));
+void appendTokensWithNewline(TokenArray* tokenArray){
+    if(tokenArray->tokens == NULL){
+        tokenArray->tokens = malloc(sizeof(char*));
     }
 
-    char** temp_ptr = realloc(*tokens, (++*num)*sizeof(**tokens));
+    char** temp_ptr = realloc(tokenArray->tokens, (++tokenArray->num)*sizeof(*tokenArray->tokens));
     if (temp_ptr != NULL) {
-        *tokens = temp_ptr;  // 重新分配成功，将临时指针赋值给原始指针
+        tokenArray->tokens = temp_ptr;  // 重新分配成功，将临时指针赋值给原始指针
     } else {
         // 处理内存分配失败的情况
     }
 
-    (*tokens)[*num-1] = "\n"; 
+    tokenArray->tokens[tokenArray->num-1] = "\n"; 
 
 }
 
-void appendTokensFromStr(const char* str, char ***tokens, size_t *num){
-    if(tokens == NULL){
-        *tokens = malloc(sizeof(char*));
-    }
-    char* strCpy = strdup(str);
+TokenArray* createTokenArray(){
+    TokenArray* tokenArray = malloc(sizeof(TokenArray));
+    tokenArray->tokens = NULL;
+    tokenArray->num = 0;
+    return tokenArray;
+}
 
+BlankArray* createBlankArray(){
+    BlankArray* blankArray = malloc(sizeof(BlankArray));
+    blankArray->blanks = NULL;
+    blankArray->num = 0;
+    return blankArray;
+}
+
+void appendTokensFromStr(const char* str, TokenArray* tokenArray){
+    char* strCpy = strdup(str);
     char *token = strtok(strCpy, " ");
     while (token != NULL) {
-        
-        char** temp_ptr = realloc(*tokens, (++*num)*sizeof(**tokens));
+        tokenArray->num++;
+        char** temp_ptr = realloc(tokenArray->tokens, (tokenArray->num)*sizeof(*tokenArray->tokens));
         if (temp_ptr != NULL) {
-            *tokens = temp_ptr;  // 重新分配成功，将临时指针赋值给原始指针
+            tokenArray->tokens = temp_ptr;  // 重新分配成功，将临时指针赋值给原始指针
         } else {
             // 处理内存分配失败的情况
+            perror("错掉了");
         }
 
-        (*tokens)[*num-1] = strdup(token); 
+        tokenArray->tokens[tokenArray->num-1] = strdup(token); 
         token = strtok(NULL, " ");
     }
 
     free(strCpy);
 }
 
-Blank** createBlankArr(char **tokens, size_t tokenNum, size_t* blankNum){
-    Blank** res = NULL;
-    for(size_t i=0; i<tokenNum; i++){
-        char* token = tokens[i];
+BlankArray* buildBlankArr(TokenArray* tokenArray){
+    BlankArray* blankArray = createBlankArray();
+    for(size_t i=0; i<tokenArray->num; i++){
+        char* token = tokenArray->tokens[i];
         char* firstPos = strchr(token, '_');
         char* lastPos = strrchr(token, '_');
         if(firstPos == NULL){
@@ -88,22 +99,20 @@ Blank** createBlankArr(char **tokens, size_t tokenNum, size_t* blankNum){
             temp->name = strndup(firstPos+1, lastPos-firstPos-1);
             temp->sourcePos = i;
 
-            if(res == NULL){
-                res = malloc(sizeof(Blank*));
-            }
-            Blank** temp_ptr = realloc(res, (++*blankNum)*sizeof(*res));
+            blankArray->num++;
+            Blank** temp_ptr = realloc(blankArray->blanks, (blankArray->num)*sizeof(*blankArray->blanks));
             if (temp_ptr != NULL) {
-                res = temp_ptr;  // 重新分配成功，将临时指针赋值给原始指针
+                blankArray->blanks = temp_ptr;  // 重新分配成功，将临时指针赋值给原始指针
             } else {
                 // 处理内存分配失败的情况
             }
             
-            res[*blankNum-1] = temp;
+            blankArray->blanks[blankArray->num-1] = temp;
         }
     }
-    return res;
+    return blankArray;
 }
 
-void blankReplace(char **tokens, const Blank* blank, const char* word){
-    
+void blankReplace(TokenArray* tokenArray, const Blank* blank, const char* word){
+
 }
