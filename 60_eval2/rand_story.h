@@ -21,6 +21,14 @@ char** getlinesFromFile(const char* fileName, size_t *lineNum);
 struct blank{
     size_t sourcePos;
     char *name;
-}
+};
+
+typedef struct blank Blank;
+
+// 从tokens建立blank数组
+Blank** createBlankArr(char **tokens, size_t tokenNum, size_t* blankNum);
+
+// 将blank位置的内容进行替换
+void blankReplace(char **tokens, const Blank* blank, const char* word);
 
 #endif

@@ -2,8 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 
-
-
 char** getlinesFromFile(const char* fileName, size_t *lineNum){
     FILE* fp = fopen(fileName, "r");
 
@@ -72,4 +70,40 @@ void appendTokensFromStr(const char* str, char ***tokens, size_t *num){
     }
 
     free(strCpy);
+}
+
+Blank** createBlankArr(char **tokens, size_t tokenNum, size_t* blankNum){
+    Blank** res = NULL;
+    for(size_t i=0; i<tokenNum; i++){
+        char* token = tokens[i];
+        char* firstPos = strchr(token, '_');
+        char* lastPos = strrchr(token, '_');
+        if(firstPos == NULL){
+            continue;
+        }
+        if(lastPos == firstPos){
+            perror("错！");
+        }else{
+            Blank* temp = malloc(sizeof(*temp));
+            temp->name = strndup(firstPos+1, lastPos-firstPos-1);
+            temp->sourcePos = i;
+
+            if(res == NULL){
+                res = malloc(sizeof(Blank*));
+            }
+            Blank** temp_ptr = realloc(res, (++*blankNum)*sizeof(*res));
+            if (temp_ptr != NULL) {
+                res = temp_ptr;  // 重新分配成功，将临时指针赋值给原始指针
+            } else {
+                // 处理内存分配失败的情况
+            }
+            
+            res[*blankNum-1] = temp;
+        }
+    }
+    return res;
+}
+
+void blankReplace(char **tokens, const Blank* blank, const char* word){
+    
 }
